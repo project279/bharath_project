@@ -5,6 +5,11 @@ const path = require("path");
 
 const app = express();
 
+const OpenAI = require("openai");
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 app.use(express.json());
 app.use(cors());
 app.use(express.static("public"));
@@ -96,34 +101,37 @@ res.send("fail");
 });
 
 
-// Chatbot
-app.post("/chat", async(req,res)=>{
+// AI Chatbot
+app.post("/chat", async (req, res) => {
 
-let msg = req.body.message.toLowerCase();
-let reply = "I don't understand";
+try {
 
-if(msg.includes("hello"))
-reply = "Hello! 👋";
+const message = req.body.message;
 
-else if(msg.includes("name"))
-reply = "I am a simple chatbot";
-
-else if(msg.includes("help"))
-reply = "How can I help you?";
-
-try{
-
-await Chat.create({
-username:"admin",
-message:req.body.message,
-reply:reply
+const response = await openai.chat.completions.create({
+model: "gpt-4.1-mini",
+messages: [
+{ role: "system", content: "You are a helpful chatbot." },
+{ role: "user", content: message }
+]
 });
 
-}catch(err){
-console.log(err);
-}
+const reply = response.choices[0].message.content;
+
+await Chat.create({
+username: "admin",
+message: message,
+reply: reply
+});
 
 res.send(reply);
+
+} catch (err) {
+
+console.log(err);
+res.send("AI error");
+
+}
 
 });
 
