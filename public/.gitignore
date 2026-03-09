@@ -1,2 +1,3 @@
-MONGO_URL=mongodb+srv://vasanth_bharath:vasanth_bharath@cluster0.zxizqmj.mongodb.net/?appName=Cluster0
-OPENAI_API_KEY=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
+.env
+.env
+node_modules
