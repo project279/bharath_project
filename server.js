@@ -2,19 +2,23 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
+const OpenAI = require("openai");
 
 const app = express();
 
-const OpenAI = require("openai");
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
 app.use(express.json());
 app.use(cors());
 app.use(express.static("public"));
 
 const PORT = process.env.PORT || 3000;
+
+/* =========================
+   OpenAI Setup
+========================= */
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
 /* =========================
    MongoDB Connection
@@ -49,6 +53,8 @@ reply:String
 
 async function createAdmin(){
 
+try{
+
 const admin = await User.findOne({username:"admin"});
 
 if(!admin){
@@ -60,6 +66,10 @@ password:"admin123"
 
 console.log("Default admin created");
 
+}
+
+}catch(err){
+console.log(err);
 }
 
 }
@@ -108,15 +118,15 @@ try {
 
 const message = req.body.message;
 
-const response = await openai.chat.completions.create({
+const completion = await openai.chat.completions.create({
 model: "gpt-4.1-mini",
 messages: [
-{ role: "system", content: "You are a helpful chatbot." },
+{ role: "system", content: "You are a helpful AI chatbot." },
 { role: "user", content: message }
 ]
 });
 
-const reply = response.choices[0].message.content;
+const reply = completion.choices[0].message.content;
 
 await Chat.create({
 username: "admin",
