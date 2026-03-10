@@ -4,7 +4,11 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
-const OpenAI = require("openai");
+const Groq = require("groq-sdk");
+
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY
+});
 
 const app = express();
 
@@ -120,17 +124,12 @@ try {
 
 const message = req.body.message;
 
-if(!message){
-return res.send("Message empty");
-}
-
-const completion = await openai.chat.completions.create({
-model: "gpt-4.1-mini",
+const completion = await groq.chat.completions.create({
 messages: [
-{ role: "system", content: "You are a helpful AI chatbot. Answer clearly." },
+{ role: "system", content: "You are a helpful AI chatbot." },
 { role: "user", content: message }
 ],
-max_tokens: 200
+model: "llama3-8b-8192"
 });
 
 const reply = completion.choices[0].message.content;
@@ -145,14 +144,12 @@ res.send(reply);
 
 } catch (err) {
 
-console.log("OPENAI ERROR:",err);
-
+console.log(err);
 res.send("AI error");
 
 }
 
 });
-
 
 // Chat history
 app.get("/history", async(req,res)=>{
