@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
 const Groq = require("groq-sdk");
+const OpenAI = require("openai");
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY
