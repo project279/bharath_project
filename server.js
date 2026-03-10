@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -28,7 +30,7 @@ mongoose.connect(
 "mongodb+srv://vasanth_bharath:vasanth_bharath@cluster0.zxizqmj.mongodb.net/chatbotDB?retryWrites=true&w=majority"
 )
 .then(()=>console.log("MongoDB Connected"))
-.catch(err=>console.log(err));
+.catch(err=>console.log("MongoDB Error:",err));
 
 
 /* =========================
@@ -36,14 +38,14 @@ mongoose.connect(
 ========================= */
 
 const User = mongoose.model("User",{
-username:String,
-password:String
+  username:String,
+  password:String
 });
 
 const Chat = mongoose.model("Chat",{
-username:String,
-message:String,
-reply:String
+  username:String,
+  message:String,
+  reply:String
 });
 
 
@@ -69,7 +71,7 @@ console.log("Default admin created");
 }
 
 }catch(err){
-console.log(err);
+console.log("Admin creation error:",err);
 }
 
 }
@@ -104,7 +106,7 @@ res.send("fail");
 }
 
 }catch(err){
-console.log(err);
+console.log("Login error:",err);
 res.send("fail");
 }
 
@@ -118,12 +120,17 @@ try {
 
 const message = req.body.message;
 
+if(!message){
+return res.send("Message empty");
+}
+
 const completion = await openai.chat.completions.create({
 model: "gpt-4.1-mini",
 messages: [
-{ role: "system", content: "You are a helpful AI chatbot." },
+{ role: "system", content: "You are a helpful AI chatbot. Answer clearly." },
 { role: "user", content: message }
-]
+],
+max_tokens: 200
 });
 
 const reply = completion.choices[0].message.content;
@@ -138,7 +145,8 @@ res.send(reply);
 
 } catch (err) {
 
-console.log(err);
+console.log("OPENAI ERROR:",err);
+
 res.send("AI error");
 
 }
@@ -151,11 +159,12 @@ app.get("/history", async(req,res)=>{
 
 try{
 
-const chats = await Chat.find();
+const chats = await Chat.find().sort({_id:-1});
 res.json(chats);
 
 }catch(err){
 
+console.log("History error:",err);
 res.json([]);
 
 }
